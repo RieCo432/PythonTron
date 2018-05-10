@@ -1,16 +1,19 @@
+from datetime import datetime
+
 import pygame
 import math
 from pygame.locals import *
 import time
+import os
 
-pygame.init()
-width, height = 1000, 500
-screen = pygame.display.set_mode((width, height))
-screen.fill(0)
+# ---------------- Customize game settings ----------------
 
-cellSize = width / 250
-gridHeight = height / cellSize
-gridWidth = width / cellSize
+window_x, window_y = 5, 32
+width, height = 1320, 690
+
+cellSize = 3
+
+moves_per_second = 100
 
 blue = (0, 0, 255)
 blue_sec = (0, 0, 128)
@@ -23,6 +26,20 @@ player1_color_sec = red_sec
 player2_color = blue
 player2_color_sec = blue_sec
 
+# ---------------------------------------------------------
+
+
+os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (window_x,window_y)
+pygame.init()
+screen = pygame.display.set_mode((width, height))
+screen.fill(0)
+
+
+gridHeight = height / cellSize
+gridWidth = width / cellSize
+
+move_timedelta = 1000000.0/moves_per_second # in microseconds
+
 
 def start_game():
     keys_p1 = [False, False, False, False]
@@ -30,26 +47,31 @@ def start_game():
     trail_p1 = [(math.floor(gridWidth/3), math.floor(gridHeight/2))]
     trail_p2 = [(2*math.floor(gridWidth/3), math.floor(gridHeight/2))]
 
-    counter = 0
+    time_last_move = datetime.now()
     game_over = False
     player1_winner = False
     player2_winner = False
+    screen.fill(0)
     while not game_over:
-        screen.fill(0)
+        frame_start_time = datetime.now()
 
-        for trail_p1_Tile in trail_p1:
-            tile_coords = (trail_p1_Tile[0]*cellSize, trail_p1_Tile[1]*cellSize)
-            if trail_p1_Tile == trail_p1[0]:
-                pygame.draw.rect(screen, player1_color, (tile_coords[0], tile_coords[1], cellSize, cellSize), 0)
-            else:
-                pygame.draw.rect(screen, player1_color_sec, (tile_coords[0], tile_coords[1], cellSize, cellSize), 0)
+        # for trail_p1_Tile in trail_p1:
+        #     tile_coords = (trail_p1_Tile[0]*cellSize, trail_p1_Tile[1]*cellSize)
+        #     if trail_p1_Tile == trail_p1[0]:
+        #         pygame.draw.rect(screen, player1_color, (tile_coords[0], tile_coords[1], cellSize, cellSize), 0)
+        #     else:
+        #         pygame.draw.rect(screen, player1_color_sec, (tile_coords[0], tile_coords[1], cellSize, cellSize), 0)
+        #
+        # for trail_p2_Tile in trail_p2:
+        #     tile_coords = (trail_p2_Tile[0]*cellSize, trail_p2_Tile[1]*cellSize)
+        #     if trail_p2_Tile == trail_p2[0]:
+        #         pygame.draw.rect(screen, player2_color, (tile_coords[0], tile_coords[1], cellSize, cellSize), 0)
+        #     else:
+        #         pygame.draw.rect(screen, player2_color_sec, (tile_coords[0], tile_coords[1], cellSize, cellSize), 0)
 
-        for trail_p2_Tile in trail_p2:
-            tile_coords = (trail_p2_Tile[0]*cellSize, trail_p2_Tile[1]*cellSize)
-            if trail_p2_Tile == trail_p2[0]:
-                pygame.draw.rect(screen, player2_color, (tile_coords[0], tile_coords[1], cellSize, cellSize), 0)
-            else:
-                pygame.draw.rect(screen, player2_color_sec, (tile_coords[0], tile_coords[1], cellSize, cellSize), 0)
+        pygame.draw.rect(screen, player1_color, (trail_p1[0][0]*cellSize, trail_p1[0][1]*cellSize, cellSize, cellSize), 0)
+        print(trail_p1[0][0])
+        pygame.draw.rect(screen, player2_color, (trail_p2[0][0]*cellSize, trail_p2[0][1]*cellSize, cellSize, cellSize), 0)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -73,7 +95,8 @@ def start_game():
                 elif event.key == K_RIGHT:
                     keys_p2 = [False, False, False, True]
 
-        if counter % 20:
+        if (datetime.now() - time_last_move).microseconds > move_timedelta:
+            time_last_move = datetime.now()
             if keys_p1[0]:
                 trail_p1.insert(0, (trail_p1[0][0], trail_p1[0][1] - 1))
             elif keys_p1[1]:
@@ -131,10 +154,14 @@ def start_game():
             player1_winner = True
             print("P2 enemy coll")
 
-        pygame.display.flip()
+        frame_end_time = datetime.now()
 
-        time.sleep(0.001)
-        counter += 1
+        pygame.display.flip()
+        frame_build_time = frame_end_time - frame_start_time
+        sleep_time_substract = frame_build_time.microseconds/1000000
+        # if 0.01666 - sleep_time_substract > 0.0:
+        #    time.sleep(0.01666 - sleep_time_substract)
+
     display_winner(player1_winner, player2_winner)
 
 
@@ -149,6 +176,8 @@ def display_winner(player1_winner, player2_winner):
     elif player2_winner and not player1_winner:
         game_status = "Player 2 wins"
         game_status_color = player2_color
+
+    print(game_status)
 
     pygame.font.init()
     my_font = pygame.font.SysFont("Comic Sans MS", 60)

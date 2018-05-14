@@ -70,7 +70,7 @@ def start_game():
         #         pygame.draw.rect(screen, player2_color_sec, (tile_coords[0], tile_coords[1], cellSize, cellSize), 0)
 
         pygame.draw.rect(screen, player1_color, (trail_p1[0][0]*cellSize, trail_p1[0][1]*cellSize, cellSize, cellSize), 0)
-        print(trail_p1[0][0])
+        # print(trail_p1[0][0])
         pygame.draw.rect(screen, player2_color, (trail_p2[0][0]*cellSize, trail_p2[0][1]*cellSize, cellSize, cellSize), 0)
 
         for event in pygame.event.get():

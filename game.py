@@ -11,7 +11,7 @@ import os
 window_x, window_y = 5, 32
 width, height = 1320, 690
 
-cellSize = 3
+cellSize = 5
 
 moves_per_second = 100
 
@@ -200,6 +200,7 @@ def display_winner(player1_winner, player2_winner):
                 pygame.quit()
                 exit(0)
             if event.type == pygame.KEYDOWN:
+                time.sleep(2)
                 start_game()
         time.sleep(0.001)
 
